@@ -1,16 +1,15 @@
-import { FC, useEffect, useState } from 'react'
+import { type FC, useEffect, useState } from 'react'
 import date from 'date-and-time'
 
 import calendar from '../../assets/calendar.json'
 import employees from '../../assets/employees.json'
 
-import { CalendarData, Color } from '../types/Calendar'
-import { Employee } from '../types/Employee'
+import { type CalendarData, Color } from '../types/Calendar'
+import { type Employee } from '../types/Employee'
 
 import { months, colors } from '../helpers/calendar'
 
 const CalendarComponent: FC = () => {
-
   const [calendarState] = useState<CalendarData[]>(
     JSON.parse(localStorage.getItem('calendar')!) || calendar.datos || []
   )
@@ -29,11 +28,15 @@ const CalendarComponent: FC = () => {
   }, [])
 
   useEffect(() => {
-    if (!employeesState) return
+    if (employeesState.length === 0) return
     localStorage.setItem('employees', JSON.stringify(employeesState))
   }, [employeesState])
 
-  const decomposeDate = (dateValue: number) => {
+  const decomposeDate = (dateValue: number): {
+    year: number
+    month: number
+    day: number
+  } => {
     const dateValueString = `${dateValue}`
 
     const year = Number(dateValueString.substring(0, 4))
@@ -46,7 +49,7 @@ const CalendarComponent: FC = () => {
   const formatDate = ({
     year,
     month,
-    day,
+    day
   }: {
     year: number
     month: number
