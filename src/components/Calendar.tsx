@@ -1,20 +1,20 @@
-import { type FC, useEffect, useState } from 'react'
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 import date from 'date-and-time'
+import { type FC, useEffect, useState } from 'react'
 
 import calendar from '../../assets/calendar.json'
 import employees from '../../assets/employees.json'
-
+import { colors, months } from '../helpers/calendar'
 import { type CalendarData, Color } from '../types/Calendar'
 import { type Employee } from '../types/Employee'
 
-import { months, colors } from '../helpers/calendar'
-
 const CalendarComponent: FC = () => {
   const [calendarState] = useState<CalendarData[]>(
-    JSON.parse(localStorage.getItem('calendar')!) || calendar.datos || []
+    JSON.parse(localStorage.getItem('calendar')!) || calendar.datos || [],
   )
   const [employeesState, setEmployeesState] = useState<Employee[]>(
-    JSON.parse(localStorage.getItem('employees')!) || employees.data || []
+    JSON.parse(localStorage.getItem('employees')!) || employees.data || [],
   )
 
   useEffect(() => {
@@ -32,7 +32,9 @@ const CalendarComponent: FC = () => {
     localStorage.setItem('employees', JSON.stringify(employeesState))
   }, [employeesState])
 
-  const decomposeDate = (dateValue: number): {
+  const decomposeDate = (
+    dateValue: number,
+  ): {
     year: number
     month: number
     day: number
@@ -49,7 +51,7 @@ const CalendarComponent: FC = () => {
   const formatDate = ({
     year,
     month,
-    day
+    day,
   }: {
     year: number
     month: number
@@ -79,7 +81,7 @@ const CalendarComponent: FC = () => {
   const renderCalendarHeaderMonthsNames = () => {
     let monthNumber = 1
     let currentMonthDaysAccumulator = 0
-    let monthsToRender: [{ monthName: string; totalMonthDays: number }?] = []
+    const monthsToRender: [{ monthName: string; totalMonthDays: number }?] = []
 
     for (let i = 0; i < calendarState.length; i++) {
       const currentMonthNumber = Number(getMonthNumber(calendarState[i].fecha))
@@ -87,10 +89,7 @@ const CalendarComponent: FC = () => {
       const monthName = getMonthName(monthNumber)
 
       // Means this iteration is the next month as the previous iteration
-      if (
-        i === calendarState.length - 1 ||
-        currentMonthNumber !== monthNumber
-      ) {
+      if (i === calendarState.length - 1 || currentMonthNumber !== monthNumber) {
         if (i === calendarState.length - 1) {
           currentMonthDaysAccumulator++
         }
@@ -121,17 +120,33 @@ const CalendarComponent: FC = () => {
   const getEmployeeDayOffColor = (
     day: number,
     dayColor: string,
-    employeeDaysOff?: [number]
+    employeeDaysOff?: [number],
   ): string => {
     if (employeeDaysOff && employeeDaysOff.some((dayOff) => day === dayOff)) {
-      return colors[Color.Gris]
+      // return colors[Color.Gris]
+      return 'rgb(105,172,92)'
     }
     return colors[dayColor]
   }
 
+  const getFontColorBasedOnBackground = (color: string): string => {
+    let fontColor = ''
+
+    if (
+      colors[color] === colors[Color.Amarillo] ||
+      colors[color] === colors[Color.Blanco]
+    ) {
+      fontColor = '#000'
+    } else {
+      fontColor = '#fff'
+    }
+
+    return fontColor
+  }
+
   const getRemainingDaysOff = (employee: Employee): number => {
     let remainingDaysOff = 0
-    if (!employee.hasOwnProperty('daysOff')) {
+    if (!Object.prototype.hasOwnProperty.call(employee, 'daysOff')) {
       return employee.total_holidays
     }
 
@@ -146,7 +161,7 @@ const CalendarComponent: FC = () => {
     employeeId: number,
     day: number,
     dayTipoId: string,
-    defaultDayColor: string
+    defaultDayColor: string,
   ): void => {
     if (defaultDayColor !== Color.Blanco || dayTipoId !== '') return
 
@@ -156,21 +171,21 @@ const CalendarComponent: FC = () => {
 
       const { total_holidays, daysOff } = employee
 
-      let updatedDaysOff = daysOff! || []
+      const updatedDaysOff = daysOff! || []
       let updatedTotalHolidays: number = total_holidays
 
       if (daysOff && daysOff.some((dayOff) => dayOff === day)) {
         const remainingDaysOff = getRemainingDaysOff(employee)
         const indexToDelete = updatedDaysOff.indexOf(day)
         if (indexToDelete !== -1) updatedDaysOff.splice(indexToDelete, 1)
-        if (remainingDaysOff < employee.total_holidays)
-          updatedTotalHolidays += 1
+        if (remainingDaysOff < employee.total_holidays) updatedTotalHolidays += 1
         done = true
       }
 
       if (
         !done &&
-        (!employee.hasOwnProperty('daysOff') ||
+        // (!employee.hasOwnProperty('daysOff') ||
+        (!Object.prototype.hasOwnProperty.call(employee, 'daysOff') ||
           (daysOff && !daysOff.some((dayOff) => dayOff === day)))
       ) {
         updatedDaysOff.push(day)
@@ -193,7 +208,7 @@ const CalendarComponent: FC = () => {
     employeeId: number,
     day: number,
     dayTipoId: string,
-    defaultDayColor: string
+    defaultDayColor: string,
   ): void => {
     toggleEmployeeDayOff(employeeId, day, dayTipoId, defaultDayColor)
   }
@@ -226,10 +241,7 @@ const CalendarComponent: FC = () => {
                     style={{
                       border: '1px solid #000',
                       backgroundColor: colors[dato.color],
-                      color:
-                        colors[dato.color] !== colors[Color.Blanco]
-                          ? '#fff'
-                          : '#000',
+                      color: getFontColorBasedOnBackground(dato.color),
                     }}
                   >
                     {getDayOfMonth(dato.fecha)}
@@ -314,7 +326,7 @@ const CalendarComponent: FC = () => {
                           backgroundColor: getEmployeeDayOffColor(
                             day.fecha,
                             day.color,
-                            employee.daysOff
+                            employee.daysOff,
                           ),
                         }}
                       ></td>
